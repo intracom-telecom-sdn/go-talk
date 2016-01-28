@@ -1,0 +1,481 @@
+A hitchhicker's guide to Go
+What is Go and why should you care?
+25 Jan 2016
+Tags: whygo, gotour, intracom-telecom, concurrency, jscheduler
+
+George Paraskevopoulos
+Software Engineer, Intracom Telecom
+geopar@intracom-telecom.com
+
+Pavlos Antoniou
+Software Engineer, Intracom Telecom
+pant@intracom-telecom.com
+
+Nikos Anastopoulos
+Technical Expert / Product Owner, Intracom Telecom
+nanast@intracom-telecom.com
+
+
+* whoami
+
+- We are the ODLP[2] team
+- We work on the performance optimization of SDN/NFV applications
+- In the past we have studied and doubled the performance of the OpenDaylight SDN controller
+- Tell about the new project
+
+
+* Starting Go
+[[https://play.golang.org/]]
+.image images/gopher.jpg 640 920
+
+
+* Go is
+[[https://golang.org]]: "Go is an open source programming language that makes it easy to build simple, reliable, and efficient software."
+
+- open source
+- concurrent
+- low learning curve
+- garbage collected
+- simple (total of 25 keywords)
+- for software engineers not for programming language designers
+- opinionated
+- developed by Google
+
+
+* Go is
+- statically typed
+- compiled
+- object oriented
+- memory safe (no pointer arithmetic)
+- type safe (explicit type conversion)
+
+
+* Who uses Go?
+- Google (obviously)
+- Github
+- Mozilla 
+- Dropbox
+- Heroku
+- Docker
+- CoreOS
+- Canonical
+- New York Times
+- SoundCloud
+- CloudFlare
+
+
+* Go in open source projects
+- Docker
+- Kubernetes
+- Flynn
+- InfluxDB
+- etcd / Fleet
+- Drone CI
+- CorkroachDB
+
+* Trend
+.image images/golang-trends.jpg
+.caption _Compare_Go,_C_and_C++_in_Google_Trends_
+
+
+* Let's Start
+
+Technical disclaimer: _The_following_content_is_rated_ *T* _for_technical_
+
+- The main concepts are made as simple as possible
+- Can't avoid technical topics
+
+* Hello World
+.play code/hello.go
+
+
+* Killer Features: Tooling
+
+* Go Busybox
+  Go is a tool for managing Go source code.
+
+  Usage:
+
+        go command [arguments]
+
+  The commands are:
+
+          build       compile packages and dependencies
+          clean       remove object files
+          doc         show documentation for package or symbol
+          env         print Go environment information
+          fix         run go tool fix on packages
+          fmt         run gofmt on package sources
+          generate    generate Go files by processing source
+          get         download and install packages and dependencies
+          install     compile and install packages and dependencies
+          list        list packages
+          run         compile and run Go program
+          test        test packages
+          tool        run specified go tool
+          version     print Go version
+          vet         run go tool vet on packages
+
+
+* gofmt 
+
+- Reported as the single most important go tool
+- Enforces coding standards and uniformity
+- With great uniformity comes great readability
+- gofmt-ed packages are enabled for semantic tools processing
+- >80% of open source Go code is gofmt-ed
+
+
+
+* godoc
+[[godoc.org]]
+
+- Great resource to search for packages
+- Indexed and searchable packages from Github, BitBucket, golang.org etc.
+- Documentation is generated from the doc-style comments
+- Documentation is coupled with the source code
+- What you see is what you get
+
+
+* Data Race detector
+Go runtime module is equipped with a race detection capabilities.
+
+The runtime module tracks
+
+- Memory accesses
+- function calls
+- goroutine creation/exit
+- synchronization
+
+Then it creates a precedence model to find the race conditions.
+
+- No false positives possible
+- Can have false negatives
+
+
+* Data Race Detector: Usage
+  $ go test -race mypkg    // to test the package
+  $ go run -race mysrc.go  // to run the source file
+  $ go build -race mycmd   // to build the command
+  $ go install -race mypkg // to install the package
+
+
+* Data Race Detector: Example output
+  WARNING: DATA RACE
+  Read by goroutine 7:
+    main.incrementCounter()
+        ..../.gopath/presentations/gotour-intracom-telecom/code/concurrency/race.go:30 +0x4c
+
+  Previous write by goroutine 10:
+    main.incrementCounter()
+        ..../.gopath/presentations/gotour-intracom-telecom/code/concurrency/race.go:30 +0x68
+
+  Goroutine 7 (running) created at:
+    main.main()
+        ..../.gopath/presentations/gotour-intracom-telecom/code/concurrency/race.go:15 +0xca
+
+  Goroutine 10 (finished) created at:
+    main.main()
+        ..../.gopath/presentations/gotour-intracom-telecom/code/concurrency/race.go:15 +0xca
+  ==================
+
+
+* go test
+- Use testing package in std lib
+- Tests in regular go
+- Can run recursively
+- Tests live in *_test.go* files
+
+Example output:
+	
+	$ go test -v
+	=== RUN TestReverse
+	--- PASS: TestReverse (0.00s)
+	=== RUN: ExampleReverse
+	--- PASS: ExampleReverse (0.00s)
+	PASS
+	ok      github.com/golang/example/stringutil    0.009s
+
+
+* golint and govet
+- Check for common mistakes
+- Suggestions and warnings
+- Check for idiomaticity
+- Integration with many editors
+- Opinionated
+
+
+* Other tools
+- Deadlock detection: Can find when the entire application deadlocks
+- gdb compatibility
+- pprof: runtime profiling and visualisation
+- goimports: sanitize imported packages
+- many many more...
+
+
+* Killer Features: Concurrency
+
+* Running applications in Python, JS, Ruby
+.video images/single-cpu-gif.mp4 video/mp4 500 _
+
+
+* Concurrency in Go
+- This is the main feature of the language
+- Go was created for building scalable applications that run on single multicore machines or even on multiple machines
+
+The concurrency mechanism is part of the core language, not facilitated by a library. It is based on three primitives
+
+- *Goroutines*: You can think of goroutines as extremely lightweight threads (order of 4Kb). They have their own dynamic stack and get multiplexed in the system threads.
+- *Channels*: Channels are 2-way typed pipes and are the main communication and synchronization mechanism in Go
+- *Select* statement: Like a switch-case statement to wait for and handle input from multiple channels
+
+
+* Concurrency and Parallelism
+Disclaimer: _Concurrency_!=_Parallelism_
+
+- Concurrent programs may or may not run in parallel
+- Concurrency is a way to structure software that deals with multiple things at once
+- Parallelism is a way to execute multiple things at once
+
+.image images/Concurrency_vs_Parallelism.jpg 320 640
+.caption _Concurrency_vs_Parallelism_
+
+
+* Communicating Sequential Processes
+
+- The concurrency model in Go is based on the concept of communicating sequential processes
+- The concept was first illustrated in a rigorous algebraic formulation by Tony Hoare (the same guy who invented quicksort)
+- It sums up to using synchronous communication mechanisms (a.k.a. pipes) for information sharing instead of sharing memory
+
+.image images/csp-formula.JPG 190 _
+.caption _Dining_philosophers_with_CSP_
+
+
+* Don't panic, no math today
+.image images/dont-panic.jpg 400 _
+	
+
+* Why CSP?
+.image images/multithreading-theory-practice.jpg
+
+
+* Coding Time
+
+
+* Example: Synchronous and Asynchronous I/O
+We want to send requests repeatedly to a server
+.code code/concurrency/syncio.go /requests start/,/requests end/
+
+
+* Example: Synchronous and Asynchronous I/O
+Specifically the following REST server
+.code code/concurrency/syncio.go /server start/,/server end/
+
+Which sends back delayed responses
+
+.code code/concurrency/syncio.go /response start/,/response end/
+
+
+* Example: Synchronous I/O
+.play code/concurrency/syncio.go /main start/,/main end/
+
+* Example: Asynchronous I/O (SleepSort)
+.play code/concurrency/asyncio.go /main start/,/main end/
+
+* Example: Race Condition
+.image images/race-condition.jpg 400 _
+
+* Example: Race Condition
+.play code/concurrency/race.go /race start/,/race end/
+
+
+* Example: Race Condition Detection
+	==================
+	WARNING: DATA RACE
+	Read by goroutine 7:
+	  main.incrementCounter()
+	      ..../.gopath/presentations/gotour-intracom-telecom/code/concurrency/race.go:24 +0x4c
+
+	Previous write by goroutine 9:
+	  main.incrementCounter()
+	      ..../.gopath/presentations/gotour-intracom-telecom/code/concurrency/race.go:24 +0x68
+
+	Goroutine 7 (running) created at:
+	  main.main()
+	      ..../.gopath/presentations/gotour-intracom-telecom/code/concurrency/race.go:14 +0xa8
+
+	Goroutine 9 (running) created at:
+	  main.main()
+	      ..../.gopath/presentations/gotour-intracom-telecom/code/concurrency/race.go:14 +0xa8
+	==================
+	Counter = 30044
+	Found 1 data race(s)
+	exit status 66
+
+
+* Example: Race Condition Resolution
+.play code/concurrency/race_resolve.go /race start/,/race end/
+
+* Example: Deadlock
+.image images/deadlock.jpg 400 _
+
+* Example: Deadlock
+.play code/concurrency/deadlock.go /deadlock start/,/deadlock end/
+
+* Example: Timeout
+.play code/concurrency/select.go /select start/,/select end/
+
+
+* Killer Features: Garbage Collection
+
+* Go Garbage Collector
+- Mark and sweep algorithm
+- (+) Low impact: Just marks unreferenced objects
+- (-) Pauses: Application execution stops to reclaim marked objects in the heap
+
+
+.image images/gc_states.jpg
+.caption _Garbage_Collector_runtime_states_
+
+* Garbage Collector Performance
+
+- The performance in older versions of Go was not great
+- Significant pauses were observed at runtime
+
+As of Go 1.5:
+
+- Concurrent implementation
+- GC latency limited to less than _10_ms_
+- Assurance: Application code runs for at least _40_ms_ out of every _50_ms_
+
+Conclusion
+
+- If the performance hit wasn't a worthwhile tradeoff in Go 1.4 maybe it is now
+
+
+
+* Garbage Collector Performance
+.image images/gc_bench.jpg 480 800
+.caption _Garbage_Collector_cross-version_bencharks_
+
+
+* Killer Features: Fast Compilation
+
+* Fast Compilation
+Go programs compile much faster (order of 50x) than C or C++ programs of equivalent size.
+
+- Low compilation time is an explicit design target
+- Language simplicity 
+- Compact grammar 
+- No symbol table
+- *Dependency*Management* is the key
+
+* Dependency Management
+- Unused dependencies trigger a _compile_time_error_
+- No circular imports
+- Each file is opened only once
+- Exported data in the object file
+
+* Example: Transitive dependency compilation
+
+- package A imports package B
+- package B imports package C
+- package A does _not_ import package C
+
+Dependent packages must be built before the packages that depend on them
+
+- C is compiled first
+- B is compiled second 
+- A is compiled last
+
+* Example: Transitive dependency linking
+
+- The compiler reads the object file for B to compile A, not its source code
+- The object file contains all the necessary type information to compile A
+- The generated object file of B includes type information for all dependencies of B that affect the public interface of B
+
+
+* Killer Features: Easy Deployment
+
+* Application Deployment in Go
+
+Deploying applications in Go is made easy due to the following
+
+- Static linking of the output binaries
+- No external dependencies required in the target (except libc on Linux)
+- The necessary runtime components are compiled into the binary
+- Can cross compile to different platforms (Linux, Mac OSX, Windows) 
+- Can cross compile to different architectures (x86, x64, ARMv5, ARMv6, ARMv7, ARMv8)
+
+
+* Showcase: Jscheduler
+
+* Jscheduler 
+[[https://github.com/intracom-telecom-sdn/jscheduler-go]]
+
+A testing tool to change the CPU affinity and the priority of Java threads at runtime
+
+Features
+
+- Live monitoring of JVM processes using JStack
+- Dynamic thread dump parsing
+- Dynamic name based thread matching
+- Dynamic CPU affinity enforcement
+- Dynamic thread priority enforcement
+- Low execution footprint
+
+The idea is simple: Parse the thread dump, get the native thread ids and enforce the policies on selected threads
+
+* Monitoring: Get JStack Thread Dump
+.code code/jscheduler-go/jscheduler/monitor.go /jstack start/,/jstack end/
+
+- Interface with system commands
+- Interface with system environment
+- Multiple returns (get used to it)
+
+
+* Thread Dump Parsing: Regex Matching
+.code code/jscheduler-go/jscheduler/monitor.go /regex string start/,/regex string end/
+
+.code code/jscheduler-go/jscheduler/monitor.go /regex compile start/,/regex compile end/
+
+.code code/jscheduler-go/jscheduler/monitor.go /regex groups start/,/regex groups end/
+
+- Standard regex syntax
+- Separate matched elements into groups
+
+* Thread Management: Some Type Declarations
+.code code/jscheduler-go/jscheduler/types.go /type declaration start/,/type declaration end/
+.code code/jscheduler-go/jscheduler/types.go /thread list start/,/thread list end/
+
+
+* Thread Management: Excluding Previous Threads
+.code code/jscheduler-go/jscheduler/monitor.go /exclude threads start/,/exclude threads end/
+
+- Maps (and how to use them as sets)
+- Pass by reference
+- Idiomatic syntax
+- Notice how we wrap the _[]Thread_ type in _ThreadList_ but we can still use _range_ and _append_ on it
+
+* Affinity Enforcement: Some low level code
+.code code/jscheduler-go/jscheduler/transform.go /syscall start/,/syscall end/
+
+- Calling raw system calls
+- Some bitmask magic
+- Unsafe
+
+* More Low Level Code: Signal Handling
+.code code/jscheduler-go/jscheduler.go /signal handling start/,/signal handling end/
+
+- Run in the background
+- Notification through channel
+
+* Program Loop: Sequential Processes
+.code code/jscheduler-go/jscheduler.go /pipeline start/,/pipeline end/
+
+* Opportunity for Improvement: Communicating Sequential Processes
+Use concurrency to improve the execution of the previous code
+.image images/gophers-ear-trumpet.jpg
+
+
+
