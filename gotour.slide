@@ -322,6 +322,9 @@ Which sends back delayed responses
 * Example: Deadlock
 .play code/concurrency/deadlock.go /deadlock start/,/deadlock end/
 
+* Example: A More Subtle Deadlock
+.play code/concurrency/deadlock_subtle.go /deadlock start/,/deadlock end/
+
 * Example: Timeout
 .play code/concurrency/select.go /select start/,/select end/
 
