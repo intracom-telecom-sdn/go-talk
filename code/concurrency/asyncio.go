@@ -34,9 +34,8 @@ func main() {
 		http.ListenAndServe(":4444", router)
 	}()
 	//server end OMIT
-
-	time.Sleep(time.Duration(3000) * time.Second)
-
+	fmt.Println("Waiting for server to start...") // Don't do this
+	time.Sleep(time.Duration(5) * time.Second)
 
 	//requests start OMIT
 	numRequests := 42
@@ -50,10 +49,8 @@ func main() {
 			done <- true // HL
 		}() // HL
 	}
-
 	for i := 0; i < numRequests; i++ { <-done } // HL
 	//requests end OMIT
-
 	http.Get("http://127.0.0.1:4444/stop")
 }
 

@@ -34,6 +34,8 @@ func main() {
 		http.ListenAndServe(":4444", router) // HL
 		//server end OMIT
 	}()
+	fmt.Println("Waiting for server to start...") // Don't do this
+	time.Sleep(time.Duration(5) * time.Second)
 
 	//requests start OMIT
 	numRequests := 42
