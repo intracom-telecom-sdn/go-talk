@@ -14,9 +14,7 @@ func main() {
     }
     counterChan <- 0 // HL
 
-    for i := 0; i < numGoroutines; i++ {
-        <-done
-    }
+    for i := 0; i < numGoroutines; i++ { <-done }
 
     fmt.Println("Counter =", <-counterChan)
 }
