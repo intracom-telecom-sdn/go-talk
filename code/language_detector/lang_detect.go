@@ -69,15 +69,15 @@ func main() {
 	phrases := []string{ EN_PHRASE, DE_PHRASE }
 	classification := make(chan PairSI)
 
+	//fine-grain start OMIT
 	for i := range phrases {
-		go func(idx int, phrase string) {
+		go func(idx int, phrase string) { // HL
 			results := make(chan PairSI)
 			for _, lang := range languages {
-				go func(lang string, results *chan PairSI) {
+				go func(lang string, results *chan PairSI) { // HL
 					eval := phrase + corpus[lang]
 					eval_sz := compressedSize(eval) - corpus_sz[lang]
 					*results <- PairSI{S: lang, I: eval_sz}
-					fmt.Println(lang)
 				}(lang, &results)
 			}
 
@@ -93,6 +93,7 @@ func main() {
 			classification <- class
   		}(i, phrases[i])
 	}
+	//fine-grain end OMIT
 
 	for i := 0; i < len(phrases); i++ {
 		class := <-classification 

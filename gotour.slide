@@ -21,8 +21,7 @@ nanast@intracom-telecom.com
 - We are the ODLP[2] team
 - We work on the performance optimization of SDN/NFV applications
 - In the past we have studied and doubled the performance of the OpenDaylight SDN controller
-- Tell about the new project
-
+- working on solution for automated tuning of NFV deployments on private clouds for performace/energy 
 
 * Starting Go
 [[https://play.golang.org/]]
@@ -282,6 +281,9 @@ Which sends back delayed responses
 * Example: Asynchronous I/O (SleepSort)
 .play code/concurrency/asyncio.go /main start/,/main end/
 
+* Example: Timeout
+.play code/concurrency/select.go /select start/,/select end/
+
 * Example: Race Condition
 .image images/race-condition.jpg 400 _
 
@@ -325,8 +327,8 @@ Which sends back delayed responses
 * Example: A More Subtle Deadlock
 .play code/concurrency/deadlock_subtle.go /deadlock start/,/deadlock end/
 
-* Example: Timeout
-.play code/concurrency/select.go /select start/,/select end/
+* Example: Fine Grained Concurrency / More Message Passing
+.code code/language_detector/lang_detect.go /fine-grain start/,/fine-grain end/
 
 
 * Killer Features: Garbage Collection
