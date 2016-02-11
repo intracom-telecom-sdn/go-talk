@@ -317,7 +317,7 @@ Which sends back delayed responses
 .play code/concurrency/race_resolve.go /race start/,/race end/
 
 * Example: Deadlock
-.image images/deadlock.jpg 400 _
+.image images/mexican-standoff.jpg 480 _
 
 * Example: Deadlock
 .play code/concurrency/deadlock.go /deadlock start/,/deadlock end/
