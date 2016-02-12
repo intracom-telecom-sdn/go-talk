@@ -328,6 +328,7 @@ Which sends back delayed responses
 .play code/concurrency/deadlock_subtle.go /deadlock start/,/deadlock end/
 
 * Example: Fine Grained Concurrency / More Message Passing
+- Natural Language Detection
 .code code/language_detector/lang_detect.go /fine-grain start/,/fine-grain end/
 
 
